@@ -2,27 +2,33 @@ import React, { useState } from 'react';
 
 import { Container } from './style';
 
-const Main: React.FC = () => {
-    const [itens, setItens] = useState<string[]>([])
-    const [todo, setTodo] = useState("")
+type todo = {
+ id: string;
+ text: string
+}
 
-    const alterarLista = (operação)=>{
-        if(operação== 'adiciona'){
-            addItens()
-        }
-        else if(operação === "remove"){
-            removeItem(todo)
-        }
-    }
-    const addItens = ()=>{
-        if (todo.trim() !==""){
-            setItens([...itens, todo])
-            setTodo("")
+const Main: React.FC = () => {
+    const [todo, setTodo] = useState<todo[]>([])
+    const [newTodo, setNewTodo] = useState<string>('')
+    
+    const adicionaTodo = (newTodo: string) => {
+        if(newTodo.trim() !== ''){
+            setTodo([...todo, {id: Date.now().toString(), text: newTodo}])
+            setNewTodo("")
         }
     }
-    const removeItem = (index:string) => {
-        const removeItem = itens.filter((item: string, i:string) => i != index)
-        setItens(removeItem)
+
+    const removeTodo = (id: string)=>{
+        const removeItem = todo.filter((item) => item.id != id)
+        setTodo(removeItem)
+    }
+
+    const editTodo = (newText:string, id:string)=>{
+        setTodo(prevItems =>
+            prevItems.map(item =>
+                item.id == id ? {...item, text: newText} : item
+            )
+        )
     }
 
   return (
@@ -32,21 +38,22 @@ const Main: React.FC = () => {
                 <div className="initial">
                     <input   
                         type="text"
-                        value={todo}
-                        onChange={e => setTodo(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') addItens();}}
+                        value={newTodo}
+                        onChange={e => setNewTodo(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') adicionaTodo(newTodo);}}
                     />
-                    <button onClick={()=>{alterarLista('adiciona')}}>
+                    <button onClick={()=>{adicionaTodo('adiciona')}}>
                         cadastrar
                     </button>
 
-                    <button onClick={()=>{alterarLista('remove')}}>
-                        remover
-                    </button>
                 </div>
                 <ul>
-                    {itens.map((item, index) => (
-                    <li key={index}>{item}</li>
+                    {todo.map(item => (
+                    <li key={item.id}>
+                        {item.text} 
+                        <button onClick={()=>{ removeTodo(item.id) }}>remove</button>
+                        <button onClick={()=> { editTodo(newTodo, item.id) }}>edita</button>
+                    </li>
                     ))}
                 </ul>
             </div>
