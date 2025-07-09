@@ -4,24 +4,24 @@ import { Container } from './style';
 
 type todo = {
  id: string;
- text: string
+ text: string;
+ aparece: boolean
 }
 
 const Main: React.FC = () => {
     const [todo, setTodo] = useState<todo[]>([])
     const [newTodo, setNewTodo] = useState<string>('')
-    const [validateEdit, setValidateEdit] = useState(true)
-    
-    const edirFirstStep = (newText:string, id:string)=> {
-        if(validateEdit){
-            setValidateEdit(!validateEdit)
-            editTodo(newText, id)
-        }
+    const [textEdict, setTextEdit] = useState<string>('')
+
+    const initialEdition = (id:string) =>{
+        setTodo(prevItem =>
+            prevItem.map(item => item.id == id ? { ...item,aparece: false } : item)
+        )
     }
 
     const adicionaTodo = (newTodo: string) => {
-        if(newTodo.trim() !== ''){
-            setTodo([...todo, {id: Date.now().toString(), text: newTodo}])
+        if(newTodo.trim() != ''){
+            setTodo([...todo, {id: Date.now().toString(), text: newTodo, aparece: true}])
             setNewTodo("")
         }
     }
@@ -34,9 +34,10 @@ const Main: React.FC = () => {
     const editTodo = (newText:string, id:string)=>{
         setTodo(prevItems =>
             prevItems.map(item =>
-                item.id == id ? {...item, text: newText} : item
+                item.id == id ? {...item, text: newText, aparece: true} : item
             )
         )
+        setTextEdit("")
     }
 
   return (
@@ -62,20 +63,25 @@ const Main: React.FC = () => {
                 <ul className='list'>
                     {todo.map(item => (
                     <li key={item.id}>
-                        {validateEdit == true ? 
-                            <span>{item.text}</span>  
+                        {item.aparece == true ? (<>
+                                <span>{item.text}</span>  
+                                <button className='editables' onClick={()=>{ removeTodo(item.id) }}>remove</button>
+                                <button className='editables' onClick={()=>{initialEdition(item.id)}}>edita</button>
+                            </>)
                         :  
-                            <input
-                            className='input'
-                             type='text' 
-                             onChange={e => 
-                             setNewTodo(e.target.value)}
-                             onKeyDown={e => { if (e.key === 'Enter') adicionaTodo(newTodo);}} 
-                             value={newTodo}
-                            />}
+                            <>
+                                <input
+                                className='input'
+                                type='text' 
+                                onChange={e => 
+                                setTextEdit(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') adicionaTodo(newTodo);}} 
+                                value={textEdict}
+                                />
+                                <button className='editables' onClick={()=>{editTodo(textEdict, item.id)}}>confirmar</button>
+                             </>
+                            }
                        
-                        <button className='editables' onClick={()=>{ removeTodo(item.id) }}>remove</button>
-                        <button className='editables' onClick={()=> { edirFirstStep(item.text, item.id) }}>edita</button>
                     </li>
                     ))}
                 </ul>
